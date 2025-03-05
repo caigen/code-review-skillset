@@ -1,10 +1,7 @@
 # code-review-skillset
 One GitHub copilot extension code review skillset for reviewing your code with some rules.
 
-
-# local setup
-
-1.
+1. forwarding setup
 ```
 .\ngrok http --url=quickly-exact-lizard.ngrok-free.app 5123
 ```
