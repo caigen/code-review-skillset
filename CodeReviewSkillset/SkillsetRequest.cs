@@ -2,6 +2,6 @@
 {
     public class SkillsetRequest
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
     }
 }

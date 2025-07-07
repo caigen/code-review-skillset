@@ -1,5 +1,6 @@
 using Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace CommonTests
 {
@@ -59,7 +60,9 @@ namespace CommonTests
             foreach (var build in buildId)
             {
                 var report = await realBuildReportHelper.GetBuildReportAsync(realProjectName, int.Parse(build));
-                
+
+                Console.WriteLine($"Build Report for {build}: {JsonConvert.SerializeObject(report)}");
+
                 // Assert
                 Assert.IsNotNull(report);
                 Assert.AreEqual(int.Parse(build), report.BuildId);
