@@ -10,10 +10,10 @@ namespace CommonTests
     [TestClass]
     public class PullRequestBuildHelperTests
     {
-        private const string TestOrganizationUrl = "https://dev.azure.com/test-organization";
-        private const string TestProjectName = "TestProject";
-        private const string TestRepositoryId = "TestRepository";
-        private const int TestPullRequestId = 123;
+        private const string TestOrganizationUrl = "https://dev.azure.com/skype";
+        private const string TestProjectName = "SCC";
+        private const string TestRepositoryId = "sync_calling_concore-conversation";
+        private const int TestPullRequestId = 1217873;
         private const int TestBuildId = 456;
 
         private PullRequestBuildHelper? _buildHelper;
