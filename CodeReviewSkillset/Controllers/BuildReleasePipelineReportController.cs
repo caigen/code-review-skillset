@@ -102,5 +102,18 @@ namespace GithubSkillsetSample.Controllers
                 return StatusCode(500, "An error occurred while retrieving the build report");
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult<BuildReport>> Post([FromBody] SkillsetRequest request)
+        {
+            Console.WriteLine("Post called");
+            
+            return await this.GetBuildReport(
+                //organizationUrl: request.OrganizationUrl,
+                //personalAccessToken: request.PersonalAccessToken,
+                //projectName: request.ProjectName,
+                id: request.Id != null ? int.Parse(request.Id) : (int?)null
+            );
+        }
     }
 }
