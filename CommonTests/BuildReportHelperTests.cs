@@ -12,9 +12,9 @@ namespace CommonTests
         private BuildReportHelper? _buildReportHelper;
         private const string TestOrganizationUrl = "https://dev.azure.com/yourorganization";
         private const string TestPersonalAccessToken = "your-pat-token";
-        private const string TestProjectName = "YourProject";
-        private const int TestBuildId = 12345;
-        private const int TestPipelineDefinitionId = 123;
+        private const string TestProjectName = "SCC";
+        private const int TestBuildId = 71015951;
+        private const int TestPipelineDefinitionId = 11418;
 
         [TestInitialize]
         public void TestInitialize()
