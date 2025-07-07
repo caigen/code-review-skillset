@@ -37,12 +37,10 @@ namespace CommonTests
         {
             // This test would be used in an integration test environment
             // with actual Azure DevOps organization, project, and build IDs
-            
             var realOrganizationUrl = "https://dev.azure.com/skype";
             var realPat = Environment.GetEnvironmentVariable("AZURE_DEVOPS_PAT");
             var realProjectName = "SCC";
-            var realBuildId = 71015951; // An actual build ID
-            
+
             if (string.IsNullOrEmpty(realPat))
             {
                 Assert.Inconclusive("AZURE_DEVOPS_PAT environment variable not set");
@@ -50,18 +48,27 @@ namespace CommonTests
             }
 
             using var realBuildReportHelper = new BuildReportHelper(realOrganizationUrl, realPat);
-            
-            // Act
-            var report = await realBuildReportHelper.GetBuildReportAsync(realProjectName, realBuildId);
-            
-            // Assert
-            Assert.IsNotNull(report);
-            Assert.AreEqual(realBuildId, report.BuildId);
-            Assert.AreEqual(realProjectName, report.ProjectName);
-            Assert.IsNotNull(report.BuildNumber);
-            Assert.IsTrue(report.Duration >= TimeSpan.Zero, "Build duration should be non-negative");
-            
-            Console.WriteLine($"Build {report.BuildNumber} - Status: {report.Status}, Result: {report.Result}");
+
+            List<string> buildId = new List<string>
+            {
+                "71015951", // Example build ID
+                "70997686"  // one release pipeline;
+            };
+
+            // Loop through each build ID to get reports
+            foreach (var build in buildId)
+            {
+                var report = await realBuildReportHelper.GetBuildReportAsync(realProjectName, int.Parse(build));
+                
+                // Assert
+                Assert.IsNotNull(report);
+                Assert.AreEqual(int.Parse(build), report.BuildId);
+                Assert.AreEqual(realProjectName, report.ProjectName);
+                Assert.IsNotNull(report.BuildNumber);
+                Assert.IsTrue(report.Duration >= TimeSpan.Zero, "Build duration should be non-negative");
+                
+                Console.WriteLine($"Build {report.BuildNumber} - Status: {report.Status}, Result: {report.Result}");
+            }
         }
     }
 }
