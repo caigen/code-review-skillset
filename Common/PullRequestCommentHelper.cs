@@ -56,9 +56,13 @@ namespace Common
                 var comment = new Comment
                 {
                     Content = commentText,
-                    CommentType = CommentType.Text,
-                    ParentCommentId = parentCommentId
+                    CommentType = CommentType.Text
                 };
+
+                if (parentCommentId.HasValue)
+                {
+                    comment.ParentCommentId = (short)parentCommentId.Value;
+                }
 
                 var thread = new GitPullRequestCommentThread
                 {
@@ -70,7 +74,7 @@ namespace Common
                     thread, 
                     repositoryId, 
                     pullRequestId, 
-                    project: projectName);
+                    projectName);
 
                 return createdThread;
             }
@@ -145,7 +149,7 @@ namespace Common
                     thread,
                     repositoryId,
                     pullRequestId,
-                    project: projectName);
+                    projectName);
 
                 return createdThread;
             }
@@ -265,7 +269,7 @@ namespace Common
                     repositoryId,
                     pullRequestId,
                     threadId,
-                    project: projectName);
+                    projectName);
 
                 return updatedThread;
             }
@@ -302,9 +306,9 @@ namespace Common
                 using var gitClient = _connection.GetClient<GitHttpClient>();
 
                 var threads = await gitClient.GetThreadsAsync(
+                    projectName,
                     repositoryId,
-                    pullRequestId,
-                    project: projectName);
+                    pullRequestId);
 
                 return threads;
             }
@@ -323,8 +327,8 @@ namespace Common
         /// <param name="pullRequestId">The ID of the pull request</param>
         /// <param name="threadId">The ID of the comment thread to reply to</param>
         /// <param name="replyText">The reply text</param>
-        /// <returns>The updated comment thread</returns>
-        public async Task<GitPullRequestCommentThread> ReplyToCommentAsync(
+        /// <returns>The created reply comment</returns>
+        public async Task<Comment> ReplyToCommentAsync(
             string projectName,
             string repositoryId,
             int pullRequestId,
@@ -356,14 +360,14 @@ namespace Common
                     CommentType = CommentType.Text
                 };
 
-                var updatedThread = await gitClient.CreateCommentAsync(
+                var createdReply = await gitClient.CreateCommentAsync(
                     reply,
                     repositoryId,
                     pullRequestId,
                     threadId,
-                    project: projectName);
+                    projectName);
 
-                return updatedThread;
+                return createdReply;
             }
             catch (Exception ex)
             {
