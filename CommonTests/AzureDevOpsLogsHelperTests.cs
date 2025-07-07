@@ -200,16 +200,16 @@ namespace CommonTests
         /// Integration test example - would require actual Azure DevOps setup
         /// </summary>
         [TestMethod]
-        [Ignore("Integration test - requires actual Azure DevOps connection")]
+        //[Ignore("Integration test - requires actual Azure DevOps connection")]
         public async Task IntegrationTest_GetPipelineRunLogsAsync_WithRealConnection()
         {
             // This test would be used in an integration test environment
             // with actual Azure DevOps organization, project, and build IDs
             
-            var realOrganizationUrl = "https://dev.azure.com/your-org";
+            var realOrganizationUrl = "https://dev.azure.com/skype";
             var realPat = Environment.GetEnvironmentVariable("AZURE_DEVOPS_PAT");
-            var realProjectName = "YourProject";
-            var realBuildId = 123; // An actual build ID
+            var realProjectName = "SCC";
+            var realBuildId = 71015951; // An actual build ID
             
             if (string.IsNullOrEmpty(realPat))
             {

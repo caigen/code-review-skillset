@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Common
 {
-    public class BuildReportHelper
+    public class BuildReportHelper : IDisposable
     {
         private readonly string _organizationUrl;
         private readonly string _personalAccessToken;
@@ -68,7 +68,7 @@ namespace Common
                     SourceVersion = build.SourceVersion,
                     RequestedBy = build.RequestedBy?.DisplayName,
                     RequestedFor = build.RequestedFor?.DisplayName,
-                    Reason = build.Reason?.ToString(),
+                    Reason = build.Reason.ToString(),
                     Repository = build.Repository?.Name,
                     RepositoryType = build.Repository?.Type,
                     Tasks = ExtractTasksFromTimeline(timeline),
@@ -79,7 +79,7 @@ namespace Common
                         DownloadUrl = a.Resource?.DownloadUrl
                     }).ToList() ?? new List<BuildArtifactInfo>(),
                     TestResults = testResults,
-                    WebUrl = build.Links?.Web?.Href
+                    WebUrl = null // Simplified - could be enhanced to parse build links properly
                 };
             }
             catch (Exception ex)
@@ -193,8 +193,8 @@ namespace Common
                 var builds = await buildClient.GetBuildsAsync(
                     project: projectName,
                     definitions: pipelineDefinitionId.HasValue ? new[] { pipelineDefinitionId.Value } : null,
-                    minTime: fromDate,
-                    maxTime: toDate,
+                    minFinishTime: fromDate,
+                    maxFinishTime: toDate,
                     top: 1000 // Adjust as needed
                 );
 
@@ -284,7 +284,7 @@ namespace Common
             if (timeline?.Records == null)
                 return tasks;
 
-            foreach (var record in timeline.Records.Where(r => r.Type == "Task"))
+            foreach (var record in timeline.Records.Where(r => r.RecordType == "Task"))
             {
                 tasks.Add(new BuildTaskInfo
                 {
@@ -305,23 +305,23 @@ namespace Common
             return tasks.OrderBy(t => t.Order).ToList();
         }
 
-        private async Task<BuildTestResultsSummary?> GetTestResultsSummaryAsync(BuildHttpClient buildClient, string projectName, int buildId)
+        private Task<BuildTestResultsSummary?> GetTestResultsSummaryAsync(BuildHttpClient buildClient, string projectName, int buildId)
         {
             try
             {
                 // This would require additional test client, simplified for now
                 // In a full implementation, you'd use TestManagementHttpClient
-                return new BuildTestResultsSummary
+                return Task.FromResult<BuildTestResultsSummary?>(new BuildTestResultsSummary
                 {
                     TotalTests = 0,
                     PassedTests = 0,
                     FailedTests = 0,
                     SkippedTests = 0
-                };
+                });
             }
             catch
             {
-                return null;
+                return Task.FromResult<BuildTestResultsSummary?>(null);
             }
         }
 
