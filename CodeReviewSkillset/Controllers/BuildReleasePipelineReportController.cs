@@ -1,5 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
 using Common;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.TeamFoundation.Build.WebApi;
+using Newtonsoft.Json;
 
 namespace GithubSkillsetSample.Controllers
 {
@@ -13,6 +15,40 @@ namespace GithubSkillsetSample.Controllers
         {
             _logger = logger;
         }
+
+        [HttpGet]
+        [Route("list")]
+        public async Task<IEnumerable<BuildReport>> List()
+        {
+            // hard coded some parameters for simplicity
+            var realOrganizationUrl = "https://dev.azure.com/skype";
+            var realPat = Environment.GetEnvironmentVariable("AZURE_DEVOPS_PAT");
+            var realProjectName = "SCC";
+
+            List<BuildReport> buildReports = new List<BuildReport>();
+            if (string.IsNullOrEmpty(realPat))
+            {
+                return buildReports; // Return empty list if PAT is not set
+            }
+
+            using var realBuildReportHelper = new BuildReportHelper(realOrganizationUrl, realPat);
+
+            List<string> buildId = new List<string>
+            {
+                "71015951", // Example build ID
+                "70997686"  // one release pipeline
+            };
+
+            // Loop through each build ID to get reports
+            foreach (var build in buildId)
+            {
+                var report = await realBuildReportHelper.GetBuildReportAsync(realProjectName, int.Parse(build));
+                buildReports.Add(report); 
+            }
+
+            return buildReports;
+        }
+
 
         /// <summary>
         /// Get a detailed build report for a specific build
