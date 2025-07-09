@@ -72,12 +72,13 @@ namespace Common
                     Repository = build.Repository?.Name,
                     RepositoryType = build.Repository?.Type,
                     //Tasks = ExtractTasksFromTimeline(timeline),
-                    Artifacts = artifacts?.Select(a => new BuildArtifactInfo
+                    /*Artifacts = artifacts?.Select(a => new BuildArtifactInfo
                     {
                         Name = a.Name,
                         Type = a.Resource?.Type,
                         DownloadUrl = a.Resource?.DownloadUrl
                     }).ToList() ?? new List<BuildArtifactInfo>(),
+                    */
                     TestResults = testResults,
                     WebUrl = null // Simplified - could be enhanced to parse build links properly
                 };
@@ -357,7 +358,7 @@ namespace Common
 
         // [gencai] shorten data.
         //public List<BuildTaskInfo> Tasks { get; set; } = new List<BuildTaskInfo>();
-        public List<BuildArtifactInfo> Artifacts { get; set; } = new List<BuildArtifactInfo>();
+        // public List<BuildArtifactInfo> Artifacts { get; set; } = new List<BuildArtifactInfo>();
         public BuildTestResultsSummary? TestResults { get; set; }
         public string? WebUrl { get; set; }
     }
