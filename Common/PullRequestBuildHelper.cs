@@ -7,13 +7,13 @@ using System.Text;
 
 namespace Common
 {
-    public class PullRequestBuildHelper : IDisposable
+    public class PullRequestHelper : IDisposable
     {
         private readonly string _organizationUrl;
         private readonly string _personalAccessToken;
         private readonly VssConnection _connection;
 
-        public PullRequestBuildHelper(string organizationUrl, string personalAccessToken)
+        public PullRequestHelper(string organizationUrl, string personalAccessToken)
         {
             _organizationUrl = organizationUrl ?? throw new ArgumentNullException(nameof(organizationUrl));
             _personalAccessToken = personalAccessToken ?? throw new ArgumentNullException(nameof(personalAccessToken));
