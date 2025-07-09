@@ -41,7 +41,7 @@ namespace CommonTests
             var realOrganizationUrl = "https://dev.azure.com/skype";
             var realPat = Environment.GetEnvironmentVariable("AZURE_DEVOPS_PAT");
             var realProjectName = "SCC";
-            var realRepositoryId = "your-repository-id"; // Replace with actual repository ID or name
+            var realRepositoryId = "sync_calling_concore-conversation"; // Replace with actual repository ID or name
 
             if (string.IsNullOrEmpty(realPat))
             {
@@ -53,8 +53,8 @@ namespace CommonTests
 
             List<int> pullRequestIds = new List<int>
             {
-                // 12345, // Example pull request ID
-                // 67890  // Another example pull request ID
+                1217873, // Example pull request ID
+                1222954  // Another example pull request ID
             };
 
             // Skip test if no pull request IDs are provided
