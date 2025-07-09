@@ -313,8 +313,6 @@ namespace Common
             {
                 // Get test management client
                 using var testClient = _connection.GetClient<TestManagementHttpClient>();
-                
-                // Get test runs associated with the build
                 var testRuns = await testClient.GetTestRunsAsync(
                     project: projectName,
                     buildUri: $"vstfs:///Build/Build/{buildId}");
@@ -338,10 +336,33 @@ namespace Common
                 // Aggregate results from all test runs for this build
                 foreach (var testRun in testRuns)
                 {
+                    //[gencai] paging 
+                    var testResults = new List<TestCaseResult>();
+                    bool done = false;
+                    while (!done)
+                    {
+                        int skip = testResults.Count;
+                        var onePage = await testClient.GetTestResultsAsync(
+                            project: projectName,
+                            runId: testRun.Id,
+                            top: 10000,
+                            skip: skip);
+                        if (onePage == null || !onePage.Any())
+                        {
+                            done = true;
+                        }
+                        else
+                        {
+                            testResults.AddRange(onePage);
+                            skip += onePage.Count;
+                        }
+                    }
+
                     // Get test results for each test run
-                    var testResults = await testClient.GetTestResultsAsync(
-                        project: projectName,
-                        runId: testRun.Id);
+                    //var testResults = await testClient.GetTestResultsAsync(
+                    //    project: projectName,
+                    //    runId: testRun.Id,
+                    //    top:10000);
 
                     foreach (var result in testResults)
                     {
@@ -362,7 +383,7 @@ namespace Common
                                 break;
                             default:
                                 // Handle other outcomes (e.g., "aborted", "timeout") as failed
-                                failedTests++;
+                                skippedTests++;
                                 break;
                         }
                     }
