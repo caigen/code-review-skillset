@@ -71,7 +71,7 @@ namespace Common
                     Reason = build.Reason.ToString(),
                     Repository = build.Repository?.Name,
                     RepositoryType = build.Repository?.Type,
-                    Tasks = ExtractTasksFromTimeline(timeline),
+                    //Tasks = ExtractTasksFromTimeline(timeline),
                     Artifacts = artifacts?.Select(a => new BuildArtifactInfo
                     {
                         Name = a.Name,
@@ -354,7 +354,9 @@ namespace Common
         public string? Reason { get; set; }
         public string? Repository { get; set; }
         public string? RepositoryType { get; set; }
-        public List<BuildTaskInfo> Tasks { get; set; } = new List<BuildTaskInfo>();
+
+        // [gencai] shorten data.
+        //public List<BuildTaskInfo> Tasks { get; set; } = new List<BuildTaskInfo>();
         public List<BuildArtifactInfo> Artifacts { get; set; } = new List<BuildArtifactInfo>();
         public BuildTestResultsSummary? TestResults { get; set; }
         public string? WebUrl { get; set; }
