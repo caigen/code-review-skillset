@@ -52,7 +52,7 @@ namespace CommonTests
 
             List<string> buildId = new List<string>
             {
-                //"71015951", // Example build ID
+                "71015951", // Example build ID
                 "70997686"  // one release pipeline;
             };
 

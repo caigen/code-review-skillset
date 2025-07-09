@@ -1,4 +1,5 @@
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
@@ -306,23 +307,86 @@ namespace Common
             return tasks.OrderBy(t => t.Order).ToList();
         }
 
-        private Task<BuildTestResultsSummary?> GetTestResultsSummaryAsync(BuildHttpClient buildClient, string projectName, int buildId)
+        private async Task<BuildTestResultsSummary?> GetTestResultsSummaryAsync(BuildHttpClient buildClient, string projectName, int buildId)
         {
             try
             {
-                // This would require additional test client, simplified for now
-                // In a full implementation, you'd use TestManagementHttpClient
-                return Task.FromResult<BuildTestResultsSummary?>(new BuildTestResultsSummary
+                // Get test management client
+                using var testClient = _connection.GetClient<TestManagementHttpClient>();
+                
+                // Get test runs associated with the build
+                var testRuns = await testClient.GetTestRunsAsync(
+                    project: projectName,
+                    buildUri: $"vstfs:///Build/Build/{buildId}");
+
+                if (!testRuns.Any())
+                {
+                    return new BuildTestResultsSummary
+                    {
+                        TotalTests = 0,
+                        PassedTests = 0,
+                        FailedTests = 0,
+                        SkippedTests = 0
+                    };
+                }
+
+                int totalTests = 0;
+                int passedTests = 0;
+                int failedTests = 0;
+                int skippedTests = 0;
+
+                // Aggregate results from all test runs for this build
+                foreach (var testRun in testRuns)
+                {
+                    // Get test results for each test run
+                    var testResults = await testClient.GetTestResultsAsync(
+                        project: projectName,
+                        runId: testRun.Id);
+
+                    foreach (var result in testResults)
+                    {
+                        totalTests++;
+                            
+                        switch (result.Outcome?.ToLowerInvariant())
+                        {
+                            case "passed":
+                                passedTests++;
+                                break;
+                            case "failed":
+                                failedTests++;
+                                break;
+                            case "skipped":
+                            case "notexecuted":
+                            case "inconclusive":
+                                skippedTests++;
+                                break;
+                            default:
+                                // Handle other outcomes (e.g., "aborted", "timeout") as failed
+                                failedTests++;
+                                break;
+                        }
+                    }
+                }
+
+                return new BuildTestResultsSummary
+                {
+                    TotalTests = totalTests,
+                    PassedTests = passedTests,
+                    FailedTests = failedTests,
+                    SkippedTests = skippedTests
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the entire build report
+                Console.WriteLine($"Warning: Failed to retrieve test results for build {buildId}: {ex.Message}");
+                return new BuildTestResultsSummary
                 {
                     TotalTests = 0,
                     PassedTests = 0,
                     FailedTests = 0,
                     SkippedTests = 0
-                });
-            }
-            catch
-            {
-                return Task.FromResult<BuildTestResultsSummary?>(null);
+                };
             }
         }
 
