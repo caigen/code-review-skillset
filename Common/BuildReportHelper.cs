@@ -313,9 +313,10 @@ namespace Common
             {
                 // Get test management client
                 using var testClient = _connection.GetClient<TestManagementHttpClient>();
-                var testRuns = await testClient.GetTestRunsAsync(
+                List<TestRun> testRuns = await testClient.GetTestRunsAsync(
                     project: projectName,
-                    buildUri: $"vstfs:///Build/Build/{buildId}");
+                    buildUri: $"vstfs:///Build/Build/{buildId}",
+                    top: 1);
 
                 if (!testRuns.Any())
                 {
@@ -328,11 +329,13 @@ namespace Common
                     };
                 }
 
-                int totalTests = 0;
-                int passedTests = 0;
-                int failedTests = 0;
-                int skippedTests = 0;
+                int totalTests = testRuns[0].TotalTests;
+                int passedTests = testRuns[0].PassedTests;
+                int failedTests = testRuns[0].UnanalyzedTests;
+                int skippedTests = testRuns[0].IncompleteTests + testRuns[0].UnanalyzedTests;
 
+                // [gencai] detail checking
+                /*
                 // Aggregate results from all test runs for this build
                 foreach (var testRun in testRuns)
                 {
@@ -388,6 +391,7 @@ namespace Common
                         }
                     }
                 }
+                */
 
                 return new BuildTestResultsSummary
                 {
