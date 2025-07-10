@@ -156,7 +156,7 @@ namespace GithubSkillsetSample.Controllers
                     //organizationUrl: request.OrganizationUrl,
                     //personalAccessToken: request.PersonalAccessToken,
                     //projectName: request.ProjectName,
-                    runId: request.Id != null ? int.Parse(request.Id) : (int?)null
+                    runId: request.RunId != null ? int.Parse(request.RunId) : (int?)null
                 );
             }
 
