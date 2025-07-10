@@ -393,12 +393,23 @@ namespace Common
                 }
                 */
 
+                // Get test results for each test run
+                //var testResults = await testClient.GetTestResultsAsync(
+                //    project: projectName,
+                //    runId: testRun.Id,
+                //    top:10000);
+
+
+               // Get Failed Tests
+                var failedTestNames = await GetFailedTestNamesAsync(projectName, buildId);
+
                 return new BuildTestResultsSummary
                 {
                     TotalTests = totalTests,
                     PassedTests = passedTests,
                     FailedTests = failedTests,
-                    SkippedTests = skippedTests
+                    SkippedTests = skippedTests,
+                    FailedTestNames = failedTestNames
                 };
             }
             catch (Exception ex)
@@ -412,6 +423,88 @@ namespace Common
                     FailedTests = 0,
                     SkippedTests = 0
                 };
+            }
+        }
+
+        /// <summary>
+        /// Gets the names of failed tests for a specific build
+        /// </summary>
+        /// <param name="projectName">The name of the Azure DevOps project</param>
+        /// <param name="buildId">The ID of the build</param>
+        /// <returns>List of failed test names</returns>
+        public async Task<List<string>> GetFailedTestNamesAsync(string projectName, int buildId)
+        {
+            if (string.IsNullOrWhiteSpace(projectName))
+                throw new ArgumentException("Project name cannot be null or empty", nameof(projectName));
+
+            if (buildId <= 0)
+                throw new ArgumentException("Build ID must be greater than 0", nameof(buildId));
+
+            var failedTestNames = new List<string>();
+
+            try
+            {
+                using var testClient = _connection.GetClient<TestManagementHttpClient>();
+                
+                // Get test runs for this build
+                var testRuns = await testClient.GetTestRunsAsync(
+                    project: projectName,
+                    buildUri: $"vstfs:///Build/Build/{buildId}");
+
+                if (!testRuns.Any())
+                {
+                    return failedTestNames;
+                }
+
+                // Get failed test results from each test run
+                foreach (var testRun in testRuns)
+                {
+                    var testResults = new List<TestCaseResult>();
+                    bool done = false;
+                    int skip = 0;
+
+                    // Handle paging for test results
+                    while (!done)
+                    {
+                        var onePage = await testClient.GetTestResultsAsync(
+                            project: projectName,
+                            runId: testRun.Id,
+                            top: 1000,
+                            skip: skip,
+                            outcomes: new[] { TestOutcome.Failed });
+
+                        if (onePage == null || !onePage.Any())
+                        {
+                            done = true;
+                        }
+                        else
+                        {
+                            testResults.AddRange(onePage);
+                            skip += onePage.Count;
+                        }
+                    }
+
+                    // Extract failed test names
+                    foreach (var result in testResults.Where(r => r.Outcome == TestOutcome.Failed.ToString()))
+                    {
+                        var testName = !string.IsNullOrEmpty(result.TestCaseTitle) 
+                            ? result.TestCaseTitle 
+                            : result.AutomatedTestName ?? "Unknown Test";
+                        
+                        if (!failedTestNames.Contains(testName))
+                        {
+                            failedTestNames.Add(testName);
+                        }
+                    }
+                }
+
+                return failedTestNames.OrderBy(name => name).ToList();
+            }
+            catch (Exception ex)
+            {
+                // Log the error but return empty list instead of throwing
+                Console.WriteLine($"Warning: Failed to retrieve failed test names for build {buildId}: {ex.Message}");
+                return failedTestNames;
             }
         }
 
@@ -490,6 +583,9 @@ namespace Common
         public int FailedTests { get; set; }
         public int SkippedTests { get; set; }
         public double PassRate => TotalTests > 0 ? (double)PassedTests / TotalTests * 100 : 0;
+
+        // [gencai] detail checking
+        public List<string> FailedTestNames { get; set; } = new List<string>();
     }
 
     /// <summary>
